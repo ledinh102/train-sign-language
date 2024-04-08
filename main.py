@@ -1,13 +1,23 @@
 import pickle
+from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+from labels import labels_dict
 import cv2
+import base64
 import mediapipe as mp
 import numpy as np
-from labels import labels_dict
 
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 model_dict = pickle.load(open("./model.p", "rb"))
 model = model_dict["model"]
 
-cap = cv2.VideoCapture(0)
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -15,13 +25,23 @@ mp_drawing_styles = mp.solutions.drawing_styles
 
 hands = mp_hands.Hands(static_image_mode=True, min_detection_confidence=0.3)
 
-while True:
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
+
+
+@app.post("/file")
+async def _file_upload(my_file: UploadFile = File(...)):
+    contents = await my_file.read()
+    nparr = np.frombuffer(contents, np.uint8)
+    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     data_aux = []
     x_ = []
     y_ = []
     num_hands_detected = 0  # Biến đếm số lượng bàn tay được phát hiện
 
-    ret, frame = cap.read()
+    # ret, frame = cap.read()
     # frame = cv2.imread("download.png")
 
     H, W, _ = frame.shape
@@ -78,8 +98,8 @@ while True:
             cv2.LINE_AA,
         )
 
-    cv2.imshow("frame", frame)
-    cv2.waitKey(1)
+    # Chuyển hình ảnh thành dạng base64
+    _, buffer = cv2.imencode(".jpg", frame)
+    img_base64 = base64.b64encode(buffer).decode("utf-8")
 
-cap.release()
-cv2.destroyAllWindows()
+    return {"filename": my_file.filename, "image_base64": img_base64}

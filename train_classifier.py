@@ -3,6 +3,7 @@ import pickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection  import cross_val_score
 import numpy as np
 
 
@@ -21,7 +22,11 @@ y_predict = model.predict(x_test)
 
 score = accuracy_score(y_predict, y_test)
 
+# scores = cross_val_score(model, data, labels, cv=35)
+# average_score = np.mean(scores)
+
 print('{}% of samples were classified correctly !'.format(score * 100))
+# print('{}% of samples were classified correctly using cross-validation!'.format(average_score * 100))
 
 f = open('model.p', 'wb')
 pickle.dump({'model': model}, f)

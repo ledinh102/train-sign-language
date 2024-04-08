@@ -1,7 +1,8 @@
 import os
 import cv2
+from labels import labels_dict
 
-DATA_DIR = './data'
+DATA_DIR = "./data"
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
@@ -17,11 +18,11 @@ if not cap.isOpened():
     exit(1)
 
 try:
-    for j in range(4, number_of_classes):
+    for j in range(0, number_of_classes):
         if not os.path.exists(os.path.join(DATA_DIR, str(j))):
             os.makedirs(os.path.join(DATA_DIR, str(j)))
 
-        print('Collecting data for class {}'.format(j))
+        print("Collecting data for class {}".format(labels_dict[j]))
 
         done = False
         while True:
@@ -30,10 +31,18 @@ try:
                 print("Failed to capture frame")
                 continue
 
-            cv2.putText(frame, 'Ready? Press "Q" ! :)', (100, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.3, (0, 255, 0), 3,
-                        cv2.LINE_AA)
-            cv2.imshow('frame', frame)
-            if cv2.waitKey(25) == ord('q'):
+            cv2.putText(
+                frame,
+                format('Ready to "' + labels_dict[j] + '"? Press "Q" ! :)'),
+                (100, 50),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.3,
+                (0, 255, 0),
+                3,
+                cv2.LINE_AA,
+            )
+            cv2.imshow("frame", frame)
+            if cv2.waitKey(25) == ord("q"):
                 break
 
         counter = 0
@@ -43,9 +52,9 @@ try:
                 print("Failed to capture frame")
                 continue
 
-            cv2.imshow('frame', frame)
+            cv2.imshow("frame", frame)
             cv2.waitKey(25)
-            cv2.imwrite(os.path.join(DATA_DIR, str(j), '{}.jpg'.format(counter)), frame)
+            cv2.imwrite(os.path.join(DATA_DIR, str(j), "{}.jpg".format(counter)), frame)
 
             counter += 1
 
